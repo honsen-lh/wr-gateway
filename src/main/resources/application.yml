@@ -1,0 +1,36 @@
+server:
+  port: 9527
+ 
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: t_WRService #路由id
+        uri: lb://warranty-service #lb代表从注册中心获取服务
+        predicates:
+        - Path=/warrantyService/**  #当路径（ - Path=/warrantyService/**），就转发到服务（lb://warranty-service），同时把路径中的warrantyService这部分去掉（- StripPrefix=1）
+        filters:
+        - StripPrefix=1
+        # 熔断降级配置
+        - name: Hystrix
+          args:
+            name: fallbackcmd
+            fallbackUri: forward:/fallback
+        
+  application:
+    name: wr-gateway
+  redis:
+    database: 0
+    host: localhost
+    port: 6379
+    password: 
+    timeout: 20000
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka7001.com:7001/eureka/,http://eureka7002.com:7002/eureka/,http://eureka7003.com:7003/eureka/
+    registry-fetch-interval-seconds: 5 #默认为30秒  
+  instance:
+    prefer-ip-address: true
+    instance-id: wr-gateway-9527
+    
